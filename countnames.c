@@ -3,10 +3,11 @@
 #include <string.h>
 
 struct nlist{ /* table entry: */
+    char names[];
     char *name;
     int count;
 };
-
+//COLLISSSSSIOOOOOOOOOOOOOOOOOOOOOOOOOOOOON
 #define HASHSIZE 101
 static struct nlist *hashtab[HASHSIZE]; /* pointer table */
 char* nameList[101];
@@ -23,6 +24,7 @@ unsigned hash(char *s) {
 
 /* lookup: look for s in hashtab */
 struct nlist *lookup(char *s) {
+
     struct nlist *np = hashtab[hash(s)];
     if (np != NULL) {
         return np;
@@ -73,7 +75,9 @@ int main(int argc, char *argv[]) {
     int lineNum = 1;
 
     while(fgets(buffer, sizeof(buffer), fp) != NULL) {
-        if(buffer[0] == '\n') {
+        //printf("%s", buffer);
+        //printf("%llu\n", strlen(buffer));
+        if(strlen(buffer) <= 1) {
             fprintf(stderr, "Warning - Line %d is empty.\n", lineNum);
         }else {
             //printf("%s", buffer);
@@ -87,7 +91,7 @@ int main(int argc, char *argv[]) {
         lineNum++;
     }
 
-    printNames();
+    //printNames();
     if(fp != stdin) {
         fclose(fp);
     }
