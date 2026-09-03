@@ -2,30 +2,37 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct nlist{ /* table entry: */
-    char names[];
-    char *name;
-    int count;
+#define HASHSIZE 101
+
+/* table entry:
+ * Each struct has a table of names just in case of collisions.
+ */
+struct nlist{
+    int nCount;            // total names
+    int nCapacity;
+    int* counts;  //counts for each name in same struct
+    char** names;
+
 };
 //COLLISSSSSIOOOOOOOOOOOOOOOOOOOOOOOOOOOOON
-#define HASHSIZE 101
+
 static struct nlist *hashtab[HASHSIZE]; /* pointer table */
 char* nameList[101];
 int nameCount = 0;
 
 /* This is the hash function: form hash value for string s */
-unsigned hash(char *s) {
+unsigned hash(char *temp) {
     unsigned hashval;
-    for (hashval = 0; *s != '\0'; s++) {
-        hashval = *s + 31 * hashval;
+    for (hashval = 0; *temp != '\0'; temp++) {
+        hashval = *temp + 31 * hashval;
     }
     return hashval % HASHSIZE;
 }
 
 /* lookup: look for s in hashtab */
 struct nlist *lookup(char *s) {
-
     struct nlist *np = hashtab[hash(s)];
+
     if (np != NULL) {
         return np;
     }
@@ -34,27 +41,71 @@ struct nlist *lookup(char *s) {
 
 /* insert: put (name, count) in hashtab */
 void insert(char *name) {
-    struct nlist *np = lookup(name);
+
+    char* temp = name;
+
+    struct nlist *np = lookup(temp);
+    const int hVal = hash(name);
 
     if (np == NULL) {
+
         np = malloc(sizeof(*np));
         if (np == NULL) {
             fprintf(stderr, "Allocation failed\n");
             exit(1);
         }
-        np->name = name;
-        np->count = 1;
-        hashtab[hash(name)] = np;
+
+        np->nCount = 1;
+        np->nCapacity = 4;
+        np->names = malloc(np->nCapacity * sizeof(char*));
+        np->names[0] = strdup(name);
+        np->counts = malloc(np->nCapacity * sizeof(int));
+        np->counts[0] = 1;
+        hashtab[hVal] = np;
 
         nameList[nameCount++] = strdup(name);
+
     } else {
-        hashtab[hash(name)]->count++;
+
+
+        int found = 0;
+        for(int i = 0; i < np->nCount; i++){
+            //printf("yes: %s\n",np->names[i]);
+            if(strcmp(np->names[i], name) == 0) {
+                found = 1;
+                //printf("yes\n");
+                hashtab[hVal]->counts[i]++;
+                break;
+            }
+        }
+        if(found == 0) {
+            if(hashtab[hVal]->nCount == hashtab[hVal]->nCapacity) {
+                hashtab[hVal]->nCapacity *=2;
+                hashtab[hVal]->names = realloc(hashtab[hVal]->names, hashtab[hVal]->nCapacity * sizeof(char*));
+                hashtab[hVal]->counts = realloc(hashtab[hVal]->counts, hashtab[hVal]->nCapacity * sizeof(int));
+
+            }
+            hashtab[hVal]->names[hashtab[hVal]->nCount] = strdup(name);
+            hashtab[hVal]->counts[hashtab[hVal]->nCount] = 1;
+
+            //printf("%s: %d\n", hashtab[hVal]->names[hashtab[hVal]->nCount], hashtab[hVal]->counts[hashtab[hVal]->nCount]);
+            hashtab[hVal]->nCount++;
+
+            nameList[nameCount++] = strdup(name);
+
+        }
     }
 }
 
 void printNames(){
-    for(int i = 0; i < nameCount; i++){
-        printf("%s: %d\n", nameList[i], hashtab[hash(nameList[i])]->count);
+    for(int i = 0; i < nameCount; i++) {
+        struct nlist *np = lookup(nameList[i]);
+        for(int j = 0; j < np->nCount; j++) {
+            if(strcmp(np->names[j], nameList[i]) == 0) {
+                printf("%s: %d\n", nameList[i], np->counts[j]);
+                break;
+            }
+        }
     }
 }
 
@@ -74,24 +125,22 @@ int main(int argc, char *argv[]) {
     char buffer[31];
     int lineNum = 1;
 
+
     while(fgets(buffer, sizeof(buffer), fp) != NULL) {
-        //printf("%s", buffer);
-        //printf("%llu\n", strlen(buffer));
         if(strlen(buffer) <= 1) {
             fprintf(stderr, "Warning - Line %d is empty.\n", lineNum);
         }else {
-            //printf("%s", buffer);
-
             if (buffer[strlen(buffer) - 1] == '\n') {
                 buffer[strlen(buffer) - 1] = '\0';
             }
             char *trueLine = strdup(buffer);
+
             insert(trueLine);
         }
         lineNum++;
     }
 
-    //printNames();
+    printNames();
     if(fp != stdin) {
         fclose(fp);
     }
