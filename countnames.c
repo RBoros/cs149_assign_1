@@ -14,7 +14,6 @@ struct nlist{
     char** names;
 
 };
-//COLLISSSSSIOOOOOOOOOOOOOOOOOOOOOOOOOOOOON
 
 static struct nlist *hashtab[HASHSIZE]; /* pointer table */
 char* nameList[101];
@@ -32,7 +31,6 @@ unsigned hash(char *temp) {
 /* lookup: look for s in hashtab */
 struct nlist *lookup(char *s) {
     struct nlist *np = hashtab[hash(s)];
-
     if (np != NULL) {
         return np;
     }
@@ -41,14 +39,11 @@ struct nlist *lookup(char *s) {
 
 /* insert: put (name, count) in hashtab */
 void insert(char *name) {
-
     char* temp = name;
-
     struct nlist *np = lookup(temp);
     const int hVal = hash(name);
 
     if (np == NULL) {
-
         np = malloc(sizeof(*np));
         if (np == NULL) {
             fprintf(stderr, "Allocation failed\n");
@@ -66,8 +61,6 @@ void insert(char *name) {
         nameList[nameCount++] = strdup(name);
 
     } else {
-
-
         int found = 0;
         for(int i = 0; i < np->nCount; i++){
             //printf("yes: %s\n",np->names[i]);
@@ -92,7 +85,6 @@ void insert(char *name) {
             hashtab[hVal]->nCount++;
 
             nameList[nameCount++] = strdup(name);
-
         }
     }
 }
@@ -125,7 +117,6 @@ int main(int argc, char *argv[]) {
     char buffer[31];
     int lineNum = 1;
 
-
     while(fgets(buffer, sizeof(buffer), fp) != NULL) {
         if(strlen(buffer) <= 1) {
             fprintf(stderr, "Warning - Line %d is empty.\n", lineNum);
@@ -147,9 +138,3 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
-
-
-
-
-
-
