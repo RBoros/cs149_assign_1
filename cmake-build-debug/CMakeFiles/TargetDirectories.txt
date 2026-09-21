@@ -1,3 +1,0 @@
-C:/Users/rayok/CLionProjects/cs149_assign_1/cmake-build-debug/CMakeFiles/cs149_assign_1.dir
-C:/Users/rayok/CLionProjects/cs149_assign_1/cmake-build-debug/CMakeFiles/edit_cache.dir
-C:/Users/rayok/CLionProjects/cs149_assign_1/cmake-build-debug/CMakeFiles/rebuild_cache.dir
